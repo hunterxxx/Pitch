@@ -8,44 +8,16 @@ import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
 import be.tarsos.dsp.pitch.PitchProcessor.PitchEstimationAlgorithm;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.provider.Telephony;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.w3c.dom.Text;
-
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,11 +26,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tarsos_dsp);
-        if (savedInstanceState == null) {
+        setContentView(R.layout.pitch);
+       /* if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment()).commit();
-        }
+        }*/
+
+
+        final MediaPlayer mediaplayer = MediaPlayer.create(this, R.raw.sad);
         AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0);
 
         dispatcher.addAudioProcessor(new PitchProcessor(PitchEstimationAlgorithm.FFT_YIN, 22050, 1024, new PitchDetectionHandler() {
@@ -68,15 +43,37 @@ public class MainActivity extends AppCompatActivity {
                                     AudioEvent audioEvent) {
                 final float pitchInHz = pitchDetectionResult.getPitch();
 
-                Button btn = (Button) findViewById(R.id.listen_Button);
-                btn.setOnClickListener(new View.OnClickListener() {
+                runOnUiThread(new Runnable() {
                     @Override
-                    public void onClick(View v) {
+                    public void run() {
+                        TextView text = (TextView) findViewById(R.id.textView1);
+                        text.setText("" + pitchInHz);
+                    }
+                });
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 //Stuff that update UI
-                                if (pitchInHz > 100) {
+                                if (pitchInHz > 100 && pitchInHz<400) {
+                                    try {
+                                        Thread.sleep(500);
+                                    } catch (InterruptedException e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                    }
+                                    TextView success = (TextView) findViewById(R.id.setEmotionText);
+                                    success.setText("sad");
+
+                                    //System.exit(0);
+                                    Log.v(TAG, "finish publishing");
+                                }else if(pitchInHz>400){
+                                    try {
+                                        Thread.sleep(500);
+                                    } catch (InterruptedException e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                    }
                                     TextView success = (TextView) findViewById(R.id.setEmotionText);
                                     success.setText("sad");
                                     //System.exit(0);
@@ -85,44 +82,29 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                         //TODO
-                        /*MediaPlayer mPlayer = MediaPlayer.create(null, R.raw.sad);
 
-                        try {
-                            mPlayer.prepare();
-                        } catch (IllegalStateException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                if(mediaplayer == null) {
+                    Log.v(TAG, "Create() on MediaPlayer failed.");
+                } else {
+                    mediaplayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+                        @Override
+                        public void onCompletion(MediaPlayer mediaplayer) {
+                            mediaplayer.stop();
+                            mediaplayer.release();
                         }
-                        Log.v(TAG, "play music");
-                        mPlayer.start();*/
-                    }
-                });
-
-
-
-
-
-/*                Button fab = (Button) findViewById(R.id.listenButton);
-                fab.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                    }
-                });*/
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        TextView text = (TextView) findViewById(R.id.textView1);
-                        text.setText("" + pitchInHz);
-                    }
-                });
+                    });
+                    //mediaplayer.start();
+                }
             }
         }));
         new Thread(dispatcher,"Audio Dispatcher").start();
 
+    }
+
+    public void listenButton(View view){
+        Intent intent = new Intent(MainActivity.this,RoutesActivity.class);
+        startActivity(intent);
     }
 
 
@@ -137,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_tarsos_ds,
+            View rootView = inflater.inflate(R.layout.pitch,
                     container, false);
             return rootView;
         }

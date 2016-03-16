@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.hunter.pitch"
-        minSdkVersion 14
+        minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -22,8 +22,10 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'org.eclipse.paho:mqtt-client:0.4.0'
-    compile 'com.android.support:design:23.1.1'
     compile files('libs/TarsosDSP-Android-2.0.jar')
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'org.eclipse.paho:mqtt-client:0.4.0'
+    compile 'com.android.support:design:23.2.1'
+    compile 'com.google.maps.android:android-maps-utils:0.4.+'
+    compile 'com.google.android.gms:play-services:8.4.0'
 }
